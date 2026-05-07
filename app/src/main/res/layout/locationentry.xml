@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/lb_cv_addr"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    android:background="#CFCBCB"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="12dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/lb_title"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F6F6F2"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/lb_cv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="15dp"
+            android:text="Title:"
+            android:textSize="17sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/cv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="15dp"
+            android:text="Sample_Text_Title"
+            android:textColor="#3A7F26"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@+id/lb_cv_title"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/lb_cv_datetime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/str_date_time"
+            android:textSize="17sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lb_cv_title" />
+
+        <TextView
+            android:id="@+id/cv_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Sample_Text_Date"
+            android:textAlignment="center"
+            android:textColor="#3A7F26"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@+id/lb_cv_datetime"
+            app:layout_constraintTop_toBottomOf="@+id/cv_title" />
+
+        <TextView
+            android:id="@+id/cv_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Sample_Text_Time"
+            android:textAlignment="center"
+            android:textColor="#3A7F26"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@+id/cv_date"
+            app:layout_constraintTop_toBottomOf="@+id/cv_title" />
+
+        <TextView
+            android:id="@+id/lb_cv_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="8dp"
+            android:text="Address:"
+            android:textSize="17sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lb_cv_datetime" />
+
+        <TextView
+            android:id="@+id/cv_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:maxWidth="260dp"
+            android:text="Sample_Text_Address"
+            android:tooltipText="Click address twice to open with Google Map"
+            android:textSize="17sp"
+            app:layout_constraintStart_toEndOf="@+id/lb_cv_address"
+            app:layout_constraintTop_toBottomOf="@+id/cv_date" />
+
+        <TextView
+            android:id="@+id/lb_cv_note"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="15dp"
+            android:text="Note:"
+            android:textSize="17sp"
+            app:layout_constraintBottom_toTopOf="@+id/btn_edit"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cv_address" />
+
+        <TextView
+            android:id="@+id/cv_note"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="10dp"
+            android:maxWidth="260dp"
+            android:text="Sample_Text_Note"
+            android:textSize="17sp"
+            app:layout_constraintStart_toEndOf="@+id/lb_cv_note"
+            app:layout_constraintTop_toBottomOf="@+id/cv_address" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_edit"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="15dp"
+            android:src="@drawable/baseline_edit_24"
+            android:tooltipText="Edit Title/Note!"
+            app:backgroundTint="#EEE"
+            app:fabCustomSize="30dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btn_share"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cv_note"
+            app:maxImageSize="20dp"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_share"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="15dp"
+            android:src="@drawable/ic_baseline_share_24"
+            android:tooltipText="Share Your Location!"
+            app:backgroundTint="#EEE"
+            app:fabCustomSize="30dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_delete"
+            app:layout_constraintStart_toEndOf="@id/btn_edit"
+            app:layout_constraintTop_toBottomOf="@+id/cv_note"
+            app:maxImageSize="20dp"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_delete"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="15dp"
+            android:background="#F5F5F1"
+            android:src="@drawable/ic_baseline_delete_24"
+            android:tooltipText="Delete Selected Location!"
+            app:backgroundTint="#EEE"
+            app:fabCustomSize="30dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btn_share"
+            app:layout_constraintTop_toBottomOf="@+id/cv_note"
+            app:maxImageSize="20dp"
+            app:tint="#A6310C"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.cardview.widget.CardView>

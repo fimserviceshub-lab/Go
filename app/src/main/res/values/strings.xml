@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Go</string>
+    <string name="API_KEY" translatable="false">AIzaSyBhltfuWJnKOmo_JCcndhUNdlhaWsPLriE</string>
+    <string name="custom_map">custom_map</string>
+    <string name="str_date_time"><![CDATA[Date & Time:]]></string>
+    <string name="str_date_format">../../....</string>
+    <string name="str_time_format">.. : .. ..</string>
+</resources>
