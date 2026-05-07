@@ -5,19 +5,17 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DBHelper extends SQLiteOpenHelper {
 
+    public static final String DB_NAME = "go_location.db";
+    public static final int DB_VERSION = 2;
+
     public static final String CUSTOM_TABLE = "LOCATION";
     public static final String COL_ID = "ID";
-
-    public static final int DB_VERSION = 1;
-
     public static final String COL_LOCATION_TITLE = "LOCATION_TITLE";
     public static final String COL_LOCATION_DATE = "LOCATION_DATE";
     public static final String COL_LOCATION_TIME = "LOCATION_TIME";
@@ -25,132 +23,170 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COL_LOCATION_LONGITUDE = "LOCATION_LONGITUDE";
     public static final String COL_LOCATION_ADDRESS = "LOCATION_ADDRESS";
     public static final String COL_LOCATION_NOTE = "LOCATION_NOTE";
-
+    public static final String COL_CAPTURED_AT = "CAPTURED_AT";
 
     public DBHelper(Context context) {
-        super(context, "go_location.db", null, DB_VERSION);
+        super(context, DB_NAME, null, DB_VERSION);
     }
+
     @Override
-    public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        onUpgrade(sqLiteDatabase, 0, DB_VERSION);
+    public void onCreate(SQLiteDatabase db) {
+        db.execSQL(
+                "CREATE TABLE " + CUSTOM_TABLE + " ("
+                        + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                        + COL_LOCATION_DATE + " TEXT NOT NULL, "
+                        + COL_LOCATION_TIME + " TEXT NOT NULL, "
+                        + COL_LOCATION_LATITUDE + " REAL NOT NULL, "
+                        + COL_LOCATION_LONGITUDE + " REAL NOT NULL, "
+                        + COL_LOCATION_ADDRESS + " TEXT NOT NULL, "
+                        + COL_LOCATION_TITLE + " TEXT NOT NULL DEFAULT 'New Location', "
+                        + COL_LOCATION_NOTE + " TEXT NOT NULL DEFAULT '', "
+                        + COL_CAPTURED_AT + " INTEGER NOT NULL DEFAULT 0"
+                        + ")"
+        );
     }
+
     @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-
-        if(oldVersion <1){
-            String createTableStatement = "CREATE TABLE " + CUSTOM_TABLE + " (" + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COL_LOCATION_DATE + " TEXT, " + COL_LOCATION_TIME + " TEXT, " + COL_LOCATION_LATITUDE + " TEXT, " + COL_LOCATION_LONGITUDE + " TEXT, " + COL_LOCATION_ADDRESS + " TEXT)";
-            sqLiteDatabase.execSQL(createTableStatement);
-        }
-
-        if(oldVersion <2){
-            String alterTableFirstStatement = "ALTER TABLE " + CUSTOM_TABLE + " ADD COLUMN " + COL_LOCATION_TITLE + " TEXT" + " DEFAULT 'New Location'";
-            String alterTableSecondStatement = "ALTER TABLE " + CUSTOM_TABLE + " ADD COLUMN " + COL_LOCATION_NOTE + " TEXT" + " DEFAULT '... ... ...'";
-
-            sqLiteDatabase.execSQL(alterTableFirstStatement);
-            sqLiteDatabase.execSQL(alterTableSecondStatement);
-        }
-    }
-
-    //Add a record
-    public boolean addOne(LocationModel locationModel){
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_LOCATION_DATE, locationModel.getLocation_date());
-        cv.put(COL_LOCATION_TIME, locationModel.getLocation_time());
-        cv.put(COL_LOCATION_LATITUDE, locationModel.getLocation_latitude());
-        cv.put(COL_LOCATION_LONGITUDE, locationModel.getLocation_longitude());
-        cv.put(COL_LOCATION_ADDRESS, locationModel.getLocation_address());
-
-        //Check if the getLocation_address is already present
-        SQLiteDatabase db_check = this.getReadableDatabase();
-
-        String queryStr = "SELECT * FROM "+CUSTOM_TABLE+ " WHERE EXISTS ( SELECT " +COL_LOCATION_ADDRESS+" FROM "+CUSTOM_TABLE+ " WHERE " +COL_LOCATION_ADDRESS+ " like  '%" + locationModel.getLocation_address() + "%' )";
-        Cursor cursor = db_check.rawQuery(queryStr, null);
-
-        if(String.valueOf(cursor.moveToFirst()) == "true"){
-            return false;
-        }else{
-            long insert = db.insert(CUSTOM_TABLE, null, cv);
-
-            if(insert == -1){
-                Log.i("DB_Error", "DB Error: Cannot insert current location");
-                return false;
-            }else{
-                return true;
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (oldVersion < 2) {
+            try {
+                db.execSQL("ALTER TABLE " + CUSTOM_TABLE + " ADD COLUMN " + COL_LOCATION_TITLE + " TEXT NOT NULL DEFAULT 'New Location'");
+            } catch (Exception ignored) {
+            }
+            try {
+                db.execSQL("ALTER TABLE " + CUSTOM_TABLE + " ADD COLUMN " + COL_LOCATION_NOTE + " TEXT NOT NULL DEFAULT ''");
+            } catch (Exception ignored) {
+            }
+            try {
+                db.execSQL("ALTER TABLE " + CUSTOM_TABLE + " ADD COLUMN " + COL_CAPTURED_AT + " INTEGER NOT NULL DEFAULT 0");
+            } catch (Exception ignored) {
             }
         }
     }
 
-    //Update a record
-    public boolean updateLocation(int location_id, String new_location_title, String new_location_note){
+    public boolean addOne(LocationModel locationModel) {
+        SQLiteDatabase db = getWritableDatabase();
+        try {
+            if (isDuplicate(db, locationModel)) {
+                return false;
+            }
 
-        if(new_location_title.isEmpty()){
-            new_location_title = "New Location";
-        }
+            ContentValues values = new ContentValues();
+            values.put(COL_LOCATION_DATE, locationModel.getLocationDate());
+            values.put(COL_LOCATION_TIME, locationModel.getLocationTime());
+            values.put(COL_LOCATION_LATITUDE, locationModel.getLatitude());
+            values.put(COL_LOCATION_LONGITUDE, locationModel.getLongitude());
+            values.put(COL_LOCATION_ADDRESS, locationModel.getAddress());
+            values.put(COL_LOCATION_TITLE, locationModel.getTitle());
+            values.put(COL_LOCATION_NOTE, locationModel.getNote());
+            values.put(COL_CAPTURED_AT, locationModel.getCapturedAtMillis());
 
-        if(new_location_note.isEmpty()){
-            new_location_note = "... ... ...";
-        }
-
-        String queryStr = "UPDATE " + CUSTOM_TABLE + " SET " + COL_LOCATION_TITLE + " = '" + new_location_title.replace("'", "''")+  "', " + COL_LOCATION_NOTE + " = '" + new_location_note.replace("'", "''") + "' WHERE " + COL_ID + " = " + location_id;
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        Cursor cursor = db.rawQuery(queryStr, null);
-
-        if(cursor.moveToLast()){
-            return false;
-        }else{
-            return true;
-        }
-    }
-
-    //Delete a record
-    public boolean deleteOne(int itemId){
-        //Find locationModel in the database, if it found, delete it, and return true. If it is not found, return false
-        String queryStr = "DELETE FROM "+CUSTOM_TABLE + " WHERE " + COL_ID + " = " + itemId;
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        Cursor cursor = db.rawQuery(queryStr, null);
-
-        if(cursor.moveToFirst()){
-            return true;
-        }else{
-            return false;
+            return db.insert(CUSTOM_TABLE, null, values) != -1;
+        } finally {
+            db.close();
         }
     }
 
-    //Get all records
-    public List<LocationModel> getAllLocations(){
+    public boolean updateLocation(long locationId, String newLocationTitle, String newLocationNote) {
+        SQLiteDatabase db = getWritableDatabase();
+        try {
+            ContentValues values = new ContentValues();
+            values.put(COL_LOCATION_TITLE, normalizeTitle(newLocationTitle));
+            values.put(COL_LOCATION_NOTE, normalizeNote(newLocationNote));
+            int rows = db.update(CUSTOM_TABLE, values, COL_ID + " = ?", new String[]{String.valueOf(locationId)});
+            return rows > 0;
+        } finally {
+            db.close();
+        }
+    }
+
+    public boolean deleteOne(long itemId) {
+        SQLiteDatabase db = getWritableDatabase();
+        try {
+            return db.delete(CUSTOM_TABLE, COL_ID + " = ?", new String[]{String.valueOf(itemId)}) > 0;
+        } finally {
+            db.close();
+        }
+    }
+
+    public List<LocationModel> getAllLocations() {
         List<LocationModel> returnList = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
 
-        //get data from database
-        String queryStr = "SELECT * FROM "+CUSTOM_TABLE+ " ORDER BY " + COL_LOCATION_DATE + " DESC" +", SUBSTR("+ COL_LOCATION_TIME + ",0,7) DESC" ;
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(queryStr, null);
+        try {
+            cursor = db.query(
+                    CUSTOM_TABLE,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    COL_CAPTURED_AT + " DESC, " + COL_ID + " DESC"
+            );
 
-        if(cursor.moveToFirst()){
-            //loop through the cursor (result set) and crate new location objects. Put them init the result list
-            do{
-                int COL_ID = cursor.getInt(0);
-                String COL_LOCATION_DATE = cursor.getString(1);
-                String COL_LOCATION_TIME = cursor.getString(2);
-                String COL_LOCATION_LATITUDE = cursor.getString(3);
-                String COL_LOCATION_LONGITUDE = cursor.getString(4);
-                String COL_LOCATION_ADDRESS = cursor.getString(5);
-                String COL_LOCATION_TITLE = cursor.getString(6);
-                String COL_LOCATION_NOTE = cursor.getString(7);
+            while (cursor.moveToNext()) {
+                long id = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ID));
+                String date = cursor.getString(cursor.getColumnIndexOrThrow(COL_LOCATION_DATE));
+                String time = cursor.getString(cursor.getColumnIndexOrThrow(COL_LOCATION_TIME));
+                double latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_LOCATION_LATITUDE));
+                double longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_LOCATION_LONGITUDE));
+                String address = cursor.getString(cursor.getColumnIndexOrThrow(COL_LOCATION_ADDRESS));
+                String title = cursor.getString(cursor.getColumnIndexOrThrow(COL_LOCATION_TITLE));
+                String note = cursor.getString(cursor.getColumnIndexOrThrow(COL_LOCATION_NOTE));
+                long capturedAt = cursor.getLong(cursor.getColumnIndexOrThrow(COL_CAPTURED_AT));
 
-                LocationModel locationModel = new LocationModel(COL_ID, COL_LOCATION_DATE, COL_LOCATION_TIME, COL_LOCATION_LATITUDE, COL_LOCATION_LONGITUDE, COL_LOCATION_ADDRESS, COL_LOCATION_TITLE, COL_LOCATION_NOTE);
-                returnList.add(locationModel);
-            }while (cursor.moveToNext());
-        }else{
-            //Failure. Do not add anything to the list
+                returnList.add(new LocationModel(
+                        id,
+                        capturedAt,
+                        date,
+                        time,
+                        latitude,
+                        longitude,
+                        address,
+                        normalizeTitle(title),
+                        normalizeNote(note)
+                ));
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
         }
-
-        //Close both the cursor and db when done
-        cursor.close();
-        db.close();
 
         return returnList;
+    }
+
+    private boolean isDuplicate(SQLiteDatabase db, LocationModel locationModel) {
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(
+                    "SELECT 1 FROM " + CUSTOM_TABLE
+                            + " WHERE abs(" + COL_LOCATION_LATITUDE + " - ?) < 0.00001"
+                            + " AND abs(" + COL_LOCATION_LONGITUDE + " - ?) < 0.00001"
+                            + " LIMIT 1",
+                    new String[]{
+                            String.valueOf(locationModel.getLatitude()),
+                            String.valueOf(locationModel.getLongitude())
+                    }
+            );
+            return cursor.moveToFirst();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    private String normalizeTitle(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            return "New Location";
+        }
+        return title.trim();
+    }
+
+    private String normalizeNote(String note) {
+        return note == null ? "" : note.trim();
     }
 }
